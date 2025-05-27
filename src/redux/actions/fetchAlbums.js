@@ -1,24 +1,27 @@
-// src/actions/movieActions.js
+// fetchAlbums.ts (or .js if not using TypeScript)
 import axios from 'axios';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const FETCH_MOVIES_REQUEST = 'FETCH_MOVIES_REQUEST';
 export const FETCH_MOVIES_SUCCESS = 'FETCH_MOVIES_SUCCESS';
 export const FETCH_MOVIES_FAILURE = 'FETCH_MOVIES_FAILURE';
 
-export const fetchMovies = () => async dispatch => {
+export const fetchMovies = () => async (dispatch) => {
   dispatch({ type: FETCH_MOVIES_REQUEST });
+
   try {
-    const response = await axios.get('https://itunes.apple.com/search?term=jumanji');
-    const movies = response.data.results;
-    await AsyncStorage.setItem('movies', JSON.stringify(movies));
-    dispatch({ type: FETCH_MOVIES_SUCCESS, payload: movies });
+    const response = await axios.get(
+      'https://itunes.apple.com/search?term=jumanji&media=movie'
+    );
+
+    dispatch({
+      type: FETCH_MOVIES_SUCCESS,
+      payload: response.data.results,
+    });
   } catch (error) {
-    const cachedData = await AsyncStorage.getItem('movies');
-    if (cachedData) {
-      dispatch({ type: FETCH_MOVIES_SUCCESS, payload: JSON.parse(cachedData) });
-    } else {
-      dispatch({ type: FETCH_MOVIES_FAILURE, error: error.message });
-    }
+    console.error('API fetch failed:', error.message);
+    dispatch({
+      type: FETCH_MOVIES_FAILURE,
+      payload: error.message || 'Something went wrong',
+    });
   }
 };
